@@ -81,7 +81,7 @@ include './BD/conexion.php';
 
    <section class="verificar">
 
-   <h1 class="titulo">Resumen de la Compra</h1>
+   <h1 class="titulo">R de la Compra</h1>
 
    <form action="" method="post">
 
