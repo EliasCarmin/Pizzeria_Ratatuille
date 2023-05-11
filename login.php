@@ -4,7 +4,7 @@ include './BD/conexion.php';
 
     session_start();
 
-    /* Usuario */
+    /* Usuario 
     if(isset($_POST['login'])){
 
         $correo = $_POST['correo'];
@@ -20,30 +20,88 @@ include './BD/conexion.php';
             $_SESSION['usuario_id'] = $row['id'];
             header('location:./index.php');
         }
-    }
+    }*/
 
     /* Admin */
     if(isset($_POST['login'])){
 
         $usuario = $_POST['correo'];
-        $usuario = filter_var($usuario, FILTER_SANITIZE_STRING);
-        $contraseña = sha1($_POST['contra_encrip']);
-        $contraseña = filter_var($contraseña, FILTER_SANITIZE_STRING);
+        $contraseña = $_POST['contra_encrip'];
     
-        $select_admin = $conn->prepare("SELECT * FROM `admin` WHERE usuario = ? AND contraseña = ?");
-        $select_admin->execute([$usuario, $contraseña]);
-        $row = $select_admin->fetch(PDO::FETCH_ASSOC);
+        $conexion=mysqli_connect("localhost","root","","r_user");
+        $consulta= "SELECT * FROM `user` WHERE user.nombre = '$usuario' AND user.password = '$contraseña'";
+        $resultado=mysqli_query($conexion, $consulta);
+        $filas=mysqli_fetch_array($resultado);
+        
+        if($filas['rol'] == 1 && $filas['cuenta'] == 1){ //admin
+            $_SESSION['admin_id'] = $filas['id'];
+            //numero de ingresos
+            $consulta2="UPDATE user SET user.NumIngresos=user.NumIngresos+1 where user.nombre='$nombre' AND user.password='$password'";
+            mysqli_query($conexion, $consulta2);
+            //ultima fecha de ingreso
+            $consulta3="UPDATE user set Fec_Ultimo_Acceso=CURDATE() where user.nombre='$nombre' AND user.password='$password'";
+            mysqli_query($conexion, $consulta3);
+            //ultima hora de ingreso
+            $consulta4="UPDATE user set Hora_Ultimo_Acceso=CURTIME() where user.nombre='$nombre' AND user.password='$password'";
+            mysqli_query($conexion, $consulta4);
+            header('location:./back/admin_index.php');
+            
     
-        if($select_admin->rowCount() > 0){
-        $_SESSION['admin_id'] = $row['id'];
-        header('location:./back/admin_index.php');
-        }else{
-        $mensaje[] = 'Usuario o Contraseña Incorrecto!';
-        }
-    
-    }
+        }else if($filas['rol'] == 2 && $filas['cuenta'] == 1){//lector
+            $_SESSION['usuario_id'] = $filas['id'];
+            //numero de ingresos
+            $consulta2="UPDATE user SET user.NumIngresos=user.NumIngresos+1 where user.nombre='$nombre' AND user.password='$password'";
+            mysqli_query($conexion, $consulta2);
+            //ultima fecha de ingreso
+            $consulta3="UPDATE user set Fec_Ultimo_Acceso=CURDATE() where user.nombre='$nombre' AND user.password='$password'";
+            mysqli_query($conexion, $consulta3);
+            //ultima hora de ingreso
+            $consulta4="UPDATE user set Hora_Ultimo_Acceso=CURTIME() where user.nombre='$nombre' AND user.password='$password'";
+            mysqli_query($conexion, $consulta4);
 
+            header('Location:./upd_perfil.php');
+        }else{
+            $mensaje[] = 'Usuario o Contraseña Incorrecto!';
+            }
+        
+    }
+    /*function acceso_user() {
+        $nombre=$_POST['nombre'];
+        $password=$_POST['password'];
+        
+        session_start();
+        $_SESSION['nombre']=$nombre;
     
+        $conexion=mysqli_connect("localhost","root","","r_user");
+        $consulta= "SELECT * FROM user WHERE nombre='$nombre' AND password='$password'";
+        $resultado=mysqli_query($conexion, $consulta);
+        $filas=mysqli_fetch_array($resultado);
+    
+    
+        if($filas['rol'] == 1 && $filas['cuenta'] == 1){ //admin
+            //numero de ingresos
+            $consulta2="UPDATE user SET user.NumIngresos=user.NumIngresos+1 where user.nombre='$nombre' AND user.password='$password'";
+            mysqli_query($conexion, $consulta2);
+            //ultima fecha de ingreso
+            $consulta3="UPDATE user set Fec_Ultimo_Acceso=CURDATE() where user.nombre='$nombre' AND user.password='$password'";
+            mysqli_query($conexion, $consulta3);
+            //ultima hora de ingreso
+            $consulta4="UPDATE user set Hora_Ultimo_Acceso=CURTIME() where user.nombre='$nombre' AND user.password='$password'";
+            mysqli_query($conexion, $consulta4);
+            header('Location: ../views/user.php');
+            
+    
+        }else if($filas['rol'] == 2 && $filas['cuenta'] == 1){//lector
+            header('Location: ../views/lector.php');
+        }
+        
+        
+        else{
+    
+            header('Location: login.php');
+            session_destroy();
+    
+        }*/
 ?>
 
 
