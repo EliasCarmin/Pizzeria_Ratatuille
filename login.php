@@ -3,7 +3,7 @@
 include './BD/conexion.php';
 
     session_start();
-
+    $bloqueo_tiempo=60;
     /* Usuario 
     if(isset($_POST['login'])){
 
@@ -33,38 +33,61 @@ include './BD/conexion.php';
         $resultado=mysqli_query($conexion, $consulta);
         $filas=mysqli_fetch_array($resultado);
         
-        if($filas['rol'] == 1 && $filas['cuenta'] == 1){ //admin
-            $_SESSION['admin_id'] = $filas['id'];
-            //numero de ingresos
-            $consulta2="UPDATE user SET user.NumIngresos=user.NumIngresos+1 where user.nombre='$nombre' AND user.password='$password'";
-            mysqli_query($conexion, $consulta2);
-            //ultima fecha de ingreso
-            $consulta3="UPDATE user set Fec_Ultimo_Acceso=CURDATE() where user.nombre='$nombre' AND user.password='$password'";
-            mysqli_query($conexion, $consulta3);
-            //ultima hora de ingreso
-            $consulta4="UPDATE user set Hora_Ultimo_Acceso=CURTIME() where user.nombre='$nombre' AND user.password='$password'";
-            mysqli_query($conexion, $consulta4);
-            header('location:./back/admin_index.php');
-            
-    
-        }else if($filas['rol'] == 2 && $filas['cuenta'] == 1){//lector
-            $_SESSION['usuario_id'] = $filas['id'];
-            //numero de ingresos
-            $consulta2="UPDATE user SET user.NumIngresos=user.NumIngresos+1 where user.nombre='$nombre' AND user.password='$password'";
-            mysqli_query($conexion, $consulta2);
-            //ultima fecha de ingreso
-            $consulta3="UPDATE user set Fec_Ultimo_Acceso=CURDATE() where user.nombre='$nombre' AND user.password='$password'";
-            mysqli_query($conexion, $consulta3);
-            //ultima hora de ingreso
-            $consulta4="UPDATE user set Hora_Ultimo_Acceso=CURTIME() where user.nombre='$nombre' AND user.password='$password'";
-            mysqli_query($conexion, $consulta4);
 
-            header('Location:./upd_perfil.php');
-        }else{
-            $mensaje[] = 'Usuario o Contraseña Incorrecto!';
+        
+            if(isset($_COOKIE["block".$usuario])){
+                $mensaje[] ="Usuario $usuario está bloqueado por 1 minuto";
+            }else{
+    
+            if($filas && $filas['rol'] == 1 && $filas['cuenta'] == 1){ //admin
+                $_SESSION['admin_id'] = $filas['id'];
+                //numero de ingresos
+                $consulta2="UPDATE user SET user.NumIngresos=user.NumIngresos+1 where user.nombre='$usuario' AND user.password='$contraseña'";
+                mysqli_query($conexion, $consulta2);
+                //ultima fecha de ingreso
+                $consulta3="UPDATE user set Fec_Ultimo_Acceso=CURDATE() where user.nombre='$usuario' AND user.password='$contraseña'";
+                mysqli_query($conexion, $consulta3);
+                //ultima hora de ingreso
+                $consulta4="UPDATE user set Hora_Ultimo_Acceso=CURTIME() where user.nombre='$usuario' AND user.password='$contraseña'";
+                mysqli_query($conexion, $consulta4);
+                header('location:./back/admin_index.php');
+                
+        
+            }else if($filas['rol'] == 2 && $filas['cuenta'] == 1){//lector
+                $_SESSION['usuario_id'] = $filas['id'];
+                //numero de ingresos
+                $consulta2="UPDATE user SET user.NumIngresos=user.NumIngresos+1 where user.nombre='$usuario' AND user.password='$contraseña'";
+                mysqli_query($conexion, $consulta2);
+                //ultima fecha de ingreso
+                $consulta3="UPDATE user set Fec_Ultimo_Acceso=CURDATE() where user.nombre='$usuario' AND user.password='$contraseña'";
+                mysqli_query($conexion, $consulta3);
+                //ultima hora de ingreso
+                $consulta4="UPDATE user set Hora_Ultimo_Acceso=CURTIME() where user.nombre='$usuario' AND user.password='$contraseña'";
+                mysqli_query($conexion, $consulta4);
+    
+                header('Location:./upd_perfil.php');
+            }else{
+    
+            //BLOQUEO DE USUARIO   
+    
+                if(isset($_COOKIE["$usuario"])){
+                    $cont=$_COOKIE["$usuario"];
+                    $cont++;
+                    setcookie($usuario,$cont,time()+30);
+                    if($cont>3){
+                        setcookie("block".$usuario,$cont,time()+30);
+                    }
+                }else{
+                    setcookie($usuario,1,time()+120);
+                    //$mensaje[] = 'Usuario o Contraseña Incorrecto!';
+                }
+                
+                
             }
         
-    }
+        }
+
+}   
     /*CODIGO DE GUÍA*/
     /*function acceso_user() {
         $nombre=$_POST['nombre'];
